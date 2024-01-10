@@ -1,4 +1,4 @@
-from addressbook import AddressBook
+from addresbook import AddressBook
 from thefuzz import fuzz
 
 
@@ -16,7 +16,7 @@ def clossest_match(querry: str, commands):
 
 
 def command_hint(user_str: str, commands, threshold: int = 0) -> str:
-    """return string with hint for user describing
+    """return string with hint for user describig
     closest match to the available bot commands"""
     user_str = user_str.strip()
     hint = ""
