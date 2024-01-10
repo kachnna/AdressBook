@@ -51,7 +51,10 @@ class Email(Field):
     def value(self, new_value):
         if new_value is not None and not self.validate_email(new_value):
             raise ValueError("Invalid email address format")
-        self._value = new_value
+        if new_value == "":
+            self._value = None
+        else:
+            self._value = new_value
 
     def validate_email(self, value):
         if len(value) == 0:
@@ -72,7 +75,10 @@ class Birthday(Field):
     def value(self, new_value):
         if new_value is not None and not self.validate_birthday(new_value):
             raise ValueError("Incorrect data format, should be YYYY-MM-DD")
-        self._value = new_value
+        if new_value == "":
+            self._value = None
+        else:
+            self._value = new_value
 
     def validate_birthday(self, value):
         date_format = "%Y-%m-%d"
@@ -91,20 +97,12 @@ class Address(Field):
     def value(self):
         return self._value
 
-    # @value.setter
-    # def value(self, new_value):
-    #     if new_value is not None and not self.validate_address(new_value):
-    #         raise ValueError("Invalid address format")
-
-    #     self._value = new_value
-
-    # def validate_address(self, value):
-    #     address_parts = [part.strip() for part in value.split(",")]
-    #     return len(address_parts) == 4
-
     @value.setter
     def value(self, new_value):
-        self._value = new_value
+        if new_value == "":
+            self._value = None
+        else:
+            self._value = new_value
 
 
 @dataclass
@@ -115,7 +113,10 @@ class Tag(Field):
 
     @value.setter
     def value(self, new_value):
-        self._value = new_value
+        if new_value == "":
+            self._value = None
+        else:
+            self._value = new_value
 
 
 @dataclass
@@ -126,7 +127,10 @@ class Notes(Field):
 
     @value.setter
     def value(self, new_value):
-        self._value = new_value
+        if new_value == "":
+            self._value = None
+        else:
+            self._value = new_value
 
 
 @dataclass
@@ -163,27 +167,6 @@ class Record:
         self.birthday = None
         print(f"Birthday deleted for {self.name}")
 
-    def days_to_birthday(self, contact_name, contact_birthday):
-        if contact_birthday is not None and len(contact_birthday) > 0:
-            current_datetime = datetime.now()
-            birthday_strptime = datetime.strptime(contact_birthday, "%Y-%m-%d")
-            birthday_date = datetime(
-                current_datetime.year, birthday_strptime.month, birthday_strptime.day
-            )
-            if current_datetime.date() == birthday_date.date():
-                print(f"Today is {contact_name}'s birthday!")
-            else:
-                if current_datetime.date() > birthday_date.date():
-                    birthday_date = datetime(
-                        current_datetime.year + 1,
-                        birthday_strptime.month,
-                        birthday_strptime.day,
-                    )
-                to_birthday = (birthday_date - current_datetime).days
-                print(f"Days until {contact_name}'s birthday: {to_birthday}")
-        else:
-            print(f"{contact_name} has no birthday entered in the address book.")
-
     def edit_address(self, new_address):
         self.address = new_address
         print(f"Address updated for {self.name}")
@@ -207,3 +190,24 @@ class Record:
     def delete_tag(self):
         self.tag = None
         print(f"Tag deleted for {self.name}")
+
+    def days_to_birthday(self, contact_name, contact_birthday):
+        if contact_birthday is not None and len(contact_birthday) > 0:
+            current_datetime = datetime.now()
+            birthday_strptime = datetime.strptime(contact_birthday, "%Y-%m-%d")
+            birthday_date = datetime(
+                current_datetime.year, birthday_strptime.month, birthday_strptime.day
+            )
+            if current_datetime.date() == birthday_date.date():
+                print(f"Today is {contact_name}'s birthday!")
+            else:
+                if current_datetime.date() > birthday_date.date():
+                    birthday_date = datetime(
+                        current_datetime.year + 1,
+                        birthday_strptime.month,
+                        birthday_strptime.day,
+                    )
+                to_birthday = (birthday_date - current_datetime).days
+                print(f"Days until {contact_name}'s birthday: {to_birthday}")
+        else:
+            print(f"{contact_name} has no birthday entered in the address book.")

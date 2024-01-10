@@ -75,10 +75,11 @@ class AddressBook(UserDict):
         return wrapper
 
     @input_error
-    def check_value(self, value):
-        if value is None:
-            return ""
-        return value
+    def check_value(self, name=None, phone=None, email=None, birthday=None, address=None, tag=None, notes=None):
+        if name.value is None and phone.value is None and email.value is None and birthday.value is None and address.value is None and tag.value is None and notes.value is None:
+            return False
+        else:
+            return True
 
     @input_error
     def func_hello(self):
