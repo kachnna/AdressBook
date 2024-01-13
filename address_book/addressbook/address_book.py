@@ -2,8 +2,9 @@ from collections import UserDict
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 import pickle
+from abc import abstractmethod, ABC
 from pathlib import Path
-from Test import TestData
+from data import TestData
 from record import Notes, Record, Name, Phone, Email, Birthday, Address, Tag
 import textwrap
 
@@ -75,11 +76,33 @@ class AddressBook(UserDict):
         return wrapper
 
     @input_error
-    def check_value(self, name=None, phone=None, email=None, birthday=None, address=None, tag=None, notes=None):
+    def check_entered_values(self, name=None, phone=None, email=None, birthday=None, address=None, tag=None, notes=None):
         if name.value is None and phone.value is None and email.value is None and birthday.value is None and address.value is None and tag.value is None and notes.value is None:
             return False
         else:
             return True
+
+    @input_error
+    def check_if_object_exists(self, name):
+        results = {}
+        contact_name = name if isinstance(name, str) else name.value
+        for key, obj in self.contacts.items():
+            if isinstance(obj.name, str):
+                value = obj.name
+            else:
+                value = obj.name.value if hasattr(
+                    obj.name, 'value') else obj.name
+            if contact_name.lower() in value.lower():
+                results[key] = obj
+        return results
+
+    @input_error
+    def check_latest_id(self):
+        list_of_id = []
+        for key_id in self.contacts.keys():
+            list_of_id.append(key_id)
+        max_ID = max(list_of_id)
+        return max_ID
 
     @input_error
     def func_hello(self):
@@ -191,31 +214,11 @@ class AddressBook(UserDict):
                 contact_counter += 1
         if contact_counter == 0:
             raise Contact_not_found
+# SHOW ALL Contacts #
 
     @input_error
-    def func_show_all(self):
-        if not self.contacts:
-            print("Address book is empty.")
-        else:
-            print("{:^150}".format("-" * 150))
-            print(
-                "{:^30}|{:^20}|{:^30}|{:^20}|{:^50}".format(
-                    "Name", "Phone", "Email", "Birthday", "Address"
-                )
-            )
-            print("{:^150}".format("-" * 150))
-            contacts_sorted = dict(
-                sorted(self.contacts.items(), key=lambda x: x[0]))
-            for name, contact in contacts_sorted.items():
-                print(
-                    "{:^30}|{:^20}|{:^30}|{:^20}|{:^50}".format(
-                        name,
-                        self.check_value(contact[0]),
-                        self.check_value(contact[1]),
-                        self.check_value(contact[2]),
-                        self.check_value(contact[3]),
-                    )
-                )
+    def show(self):
+        return self.contacts
 
     @input_error
     def func_show_notes(self):
@@ -355,68 +358,12 @@ class AddressBook(UserDict):
                 break
 
     @input_error
-    def func_add(
-        self,
-        name,
-        phone=None,
-        email=None,
-        birthday=None,
-        address=None,
-        tag=None,
-        notes=None,
-    ):
-        if len(name) == 0:
-            raise KeyError
-        else:
-            new_contact = Record(
-                Name(name),
-                Phone(phone),
-                Email(email),
-                Birthday(birthday),
-                Address(address),
-                Tag(tag),
-                Notes(notes),
-            )
-            self.contacts[new_contact.name.value] = [
-                new_contact.phone.value,
-                new_contact.email.value,
-                new_contact.birthday.value,
-                new_contact.address.value,
-                new_contact.tag.value,
-                new_contact.notes.value,
-            ]
-            print("{:^60}".format("-" * 60))
-            print("{:^20}|{:^40}".format("Name", name))
-            print(
-                "{:^20}|{:^40}".format(
-                    "Phone", self.check_value(self.contacts[name][0])
-                )
-            )
-            print(
-                "{:^20}|{:^40}".format(
-                    "Email", self.check_value(self.contacts[name][1])
-                )
-            )
-            print(
-                "{:^20}|{:^40}".format(
-                    "Birthday", self.check_value(self.contacts[name][2])
-                )
-            )
-            print(
-                "{:^20}|{:^40}".format(
-                    "Address", self.check_value(self.contacts[name][3])
-                )
-            )
-            print(
-                "{:^20}|{:^40}".format(
-                    "Tag", self.check_value(self.contacts[name][4]))
-            )
-            print(
-                "{:^20}|{:^40}".format(
-                    "Notes", self.check_value(self.contacts[name][5])
-                )
-            )
-            print("{:^60}".format("-" * 60))
+    def add(self, name, phone, email, birthday, address, tag, notes):
+        id = int(self.check_latest_id() + 1)
+        new_contact = Record(name.value, phone.value, email.value,
+                             birthday.value, address.value, tag.value, notes.value)
+        self.contacts[id] = new_contact
+        return dict(filter(lambda item: item[0] == id, self.contacts.items()))
 
     @input_error
     def func_birthday(self, name):
@@ -488,63 +435,8 @@ class AddressBook(UserDict):
             raise Contact_not_found
 
     @input_error
-    def func_delete_contact(self, name):
-        if name in self.contacts:
-            self.contacts.pop(name)
-            print("Contact deleted.")
-        else:
-            raise Contact_not_found
-
-    @input_error
-    def func_delete_phone(self, name):
-        if name in self.contacts:
-            contact = Record(
-                name,
-                self.contacts[name][0],
-                self.contacts[name][1],
-                self.contacts[name][2],
-                self.contacts[name][3],
-                self.contacts[name][4],
-                self.contacts[name][5],
-            )
-            contact.delete_phone()
-            self.contacts[contact.name][0] = contact.phone
-        else:
-            raise Contact_not_found
-
-    @input_error
-    def func_delete_email(self, name):
-        if name in self.contacts:
-            contact = Record(
-                name,
-                self.contacts[name][0],
-                self.contacts[name][1],
-                self.contacts[name][2],
-                self.contacts[name][3],
-                self.contacts[name][4],
-                self.contacts[name][5],
-            )
-            contact.delete_email()
-            self.contacts[contact.name][1] = contact.email
-        else:
-            raise Contact_not_found
-
-    @input_error
-    def func_delete_birthday(self, name):
-        if name in self.contacts:
-            contact = Record(
-                name,
-                self.contacts[name][0],
-                self.contacts[name][1],
-                self.contacts[name][2],
-                self.contacts[name][3],
-                self.contacts[name][4],
-                self.contacts[name][5],
-            )
-            contact.delete_birthday()
-            self.contacts[contact.name][2] = contact.birthday
-        else:
-            raise Contact_not_found
+    def delete(self, key):
+        self.contacts.pop(key)
 
     @input_error
     def func_edit_address(self, name, new_address):
@@ -562,24 +454,6 @@ class AddressBook(UserDict):
             # Aktualizacja adresu
             self.contacts[name][3] = Address(new_address).value
             print("address changed successfully")
-        else:
-            raise Contact_not_found
-
-    @input_error
-    def func_delete_address(self, name):
-        if name in self.contacts:
-            contact = Record(
-                name,
-                self.contacts[name][0],
-                self.contacts[name][1],
-                self.contacts[name][2],
-                self.contacts[name][3],
-                self.contacts[name][4],
-                self.contacts[name][5],
-            )
-            contact.delete_address()
-            # Usunięcie adresu
-            self.contacts[contact.name][3] = contact.address
         else:
             raise Contact_not_found
 
@@ -607,23 +481,6 @@ class AddressBook(UserDict):
             raise Contact_not_found
 
     @input_error
-    def func_delete_tag(self, name):
-        if name in self.contacts:
-            contact = Record(
-                name,
-                self.contacts[name][0],
-                self.contacts[name][1],
-                self.contacts[name][2],
-                self.contacts[name][3],
-                self.contacts[name][4],
-                self.contacts[name][5],
-            )
-            contact.delete_tag()
-            self.contacts[contact.name][4] = contact.tag
-        else:
-            raise Contact_not_found
-
-    @input_error
     def func_edit_notes(self, name, new_notes):
         if name in self.contacts:
             contact = Record(
@@ -643,23 +500,6 @@ class AddressBook(UserDict):
                 self.contacts[contact.name][5] = contact.notes
             else:
                 print("Note was not changed.")
-        else:
-            raise Contact_not_found
-
-    @input_error
-    def func_delete_notes(self, name):
-        if name in self.contacts:
-            contact = Record(
-                name,
-                self.contacts[name][0],
-                self.contacts[name][1],
-                self.contacts[name][2],
-                self.contacts[name][3],
-                self.contacts[name][4],
-                self.contacts[name][5],
-            )
-            contact.delete_notes()
-            self.contacts[contact.name][5] = contact.notes
         else:
             raise Contact_not_found
 

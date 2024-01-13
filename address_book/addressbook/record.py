@@ -5,7 +5,7 @@ from datetime import datetime
 
 @dataclass
 class Field:
-    value: str = None
+    value: None
 
 
 @dataclass
@@ -16,7 +16,13 @@ class Name(Field):
 
     @value.setter
     def value(self, new_value):
-        self._value = new_value
+        if new_value == "":
+            self._value = None
+        else:
+            self._value = new_value
+
+    def __lt__(self, other):
+        return self.value < other.value
 
 
 @dataclass

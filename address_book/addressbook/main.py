@@ -1,5 +1,11 @@
+<<<<<<< Updated upstream
 from addresbook import AddressBook
+=======
+from address_book import AddressBook
+from record import Notes, Record, Name, Phone, Email, Birthday, Address, Tag
+>>>>>>> Stashed changes
 from thefuzz import fuzz
+import inter
 
 
 def clossest_match(querry: str, commands):
@@ -48,6 +54,96 @@ def command_hint(user_str: str, commands, threshold: int = 0) -> str:
         hint = f"Did you mean?: {', '.join(hits)}"
     return hint
 
+# add
+
+
+def add_func(obj):
+    to_add = True
+    print("\nPlease complete the information below. Name is mandatory, but the rest you can skip by clicking Enter.")
+    name = Name(input("\nEnter name*: "))
+    contacts = obj.check_if_object_exists(name)
+
+    if len(contacts) > 0:
+        print("\nI've found in the Address Book the contact(s) with the same name:")
+        inter.display_contacts(inter.ViewContact(), contacts)
+        choice = input("\nWould you like to update the contact? (Y/N): ")
+        if choice.lower() in ["y", "yes", "true"]:
+            to_add = False
+            if len(contacts) > 1:
+                while True:
+                    number = int(
+                        input("\nPlease enter the ID number of the contact you want to update: "))
+                    if number in contacts.keys():
+                        break
+                    else:
+                        print(
+                            "\nSorry, but I couldn't find any contacts with this ID. Try again...\n")
+                key = number
+                value = contacts[number]
+            else:
+                key = list(contacts.keys())[0]
+                value = list(contacts.values())[0]
+            print(
+                "\nComplete the information below that you want to update or skip by clicking Enter.")
+
+        else:
+            print(
+                f"\nContinue entering the information for a new contact: {name.value}\n")
+
+    phone = Phone(input("Enter new phone: "))
+    email = Email(input("Enter new email: "))
+    birthday = Birthday(input("Enter new birthday: "))
+    address = Address(input("Enter new address: "))
+    tag = Tag(input("Enter new tag: "))
+    notes = Notes(input("Enter new notes: "))
+
+    if obj.check_entered_values(name, phone, email, birthday, address, tag, notes):
+        if to_add:
+            new_contact = obj.add(name, phone, email,
+                                  birthday, address, tag, notes)
+            obj.save_to_file()
+            inter.display_contacts(inter.ViewContact(), new_contact)
+            print("Contact added successfully.")
+        else:
+            obj_updated = obj.edit(
+                value, name, phone, email, birthday, address, tag, notes)
+            obj.save_to_file()
+            results_to_display = {}
+            results_to_display[key] = obj_updated
+            inter.display_contacts(inter.ViewContact(), results_to_display)
+            print("Contact updated successfully.")
+    else:
+        raise ValueError(
+            "You did not enter any data to change the contact information. Please try again.")
+
+# show all
+
+
+def show_all_func(object):
+    result = object.show()
+    inter.display_contacts(inter.ViewContacts(), result)
+
+# delete
+
+
+def delete_func(object):
+    name = Name(input("\nEnter name of contact you would like to delete: "))
+    contact = object.check_if_object_exists(name)
+    if len(contact) > 0:
+        print("\nI've found in the Address Book the contact you want to delete:")
+        inter.display_contacts(inter.ViewContact(), contact)
+        choice = input(
+            "\nPlease confirm if this is the contact you want to delete? (Y/N): ")
+        if choice.lower() in ["y", "yes", "true"]:
+            for contact_id in contact.keys():
+                object.delete(contact_id)
+                object.save_to_file()
+            print("\nContact deleted successfully.")
+        else:
+            print("\n No contact was delete from this Address Book.")
+    else:
+        print(f"Contact with ID {name} not found.")
+
 
 def main():
     print(
@@ -80,13 +176,7 @@ Choose one of the commands:
     - edit address - to change address of the user,
     - edit tag - to change tag of the user,
     - edit notes - to change notes of the user,      
-    - delete contact - to remove contact from Address Book
-    - delete phone - to delete phone of the user,
-    - delete email - to delete email of the user,
-    - delete birthday - to delete birthday of the user,
-    - delete address - to delete address of the user, 
-    - delete tag - to delete tag of the user,
-    - delete notes - to delete notes of the user,
+    - delete - to remove contact from Address Book,
     - good bye, close, exit or . - to say good bye and close the program.
 After entering the command, you will be asked for additional information if needed to complete the command."""
     )
@@ -97,10 +187,10 @@ After entering the command, you will be asked for additional information if need
         "find": user_addr_book.func_find,
         "search": user_addr_book.func_search,
         "search notes": user_addr_book.func_search_notes,
-        "show all": user_addr_book.func_show_all,
+        "show all": show_all_func,
         "show": user_addr_book.func_show,
         "show notes": user_addr_book.func_show_notes,
-        "add": user_addr_book.func_add,
+        "add": add_func,
         "birthday": user_addr_book.func_birthday,
         "upcoming birthdays": user_addr_book.func_upcoming_birthdays,
         "edit phone": user_addr_book.func_edit_phone,
@@ -109,13 +199,7 @@ After entering the command, you will be asked for additional information if need
         "edit address": user_addr_book.func_edit_address,
         "edit tag": user_addr_book.func_edit_tag,
         "edit notes": user_addr_book.func_edit_notes,
-        "delete contact": user_addr_book.func_delete_contact,
-        "delete phone": user_addr_book.func_delete_phone,
-        "delete email": user_addr_book.func_delete_email,
-        "delete birthday": user_addr_book.func_delete_birthday,
-        "delete address": user_addr_book.func_delete_address,
-        "delete tag": user_addr_book.func_delete_tag,
-        "delete notes": user_addr_book.func_delete_notes,
+        "delete": delete_func,
         "good bye": user_addr_book.func_exit,
         "close": user_addr_book.func_exit,
         "exit": user_addr_book.func_exit,
@@ -126,29 +210,9 @@ After entering the command, you will be asked for additional information if need
         listen = listen_enterred.lower().strip()
         if listen in OPERATIONS_MAP:
             if listen == "add":
-                name = input("Enter name: ").strip()
-                phone = input("Enter phone: ").strip()
-                email = input("Enter email: ").strip()
-                birthday = input("Enter birthday: ").strip()
-                address = input("Enter address: ").strip()
-                tag = input("Enter tag: ").strip()
-                notes = input("Enter your notes: ").strip()
-                OPERATIONS_MAP[listen](
-                    name, phone, email, birthday, address, tag, notes
-                )
-            elif listen in [
-                "find",
-                "birthday",
-                "delete contact",
-                "delete phone",
-                "delete email",
-                "delete birthday",
-                "delete address",
-                "delete tag",
-                "delete notes",
-            ]:
-                name = input("Enter name: ").strip()
-                OPERATIONS_MAP[listen](name)
+                OPERATIONS_MAP[listen](user_addr_book)
+            elif listen == "delete":
+                OPERATIONS_MAP[listen](user_addr_book)
             elif listen == "upcoming birthdays":
                 keyword = input(
                     "Which time frame from today would you like to check? Please input the number of days from now: "
@@ -197,7 +261,7 @@ After entering the command, you will be asked for additional information if need
                 user_addr_book.save_to_file()
                 OPERATIONS_MAP[listen.lower()]()
             else:
-                OPERATIONS_MAP[listen.lower()]()
+                OPERATIONS_MAP[listen.lower()](user_addr_book)
         else:
             hint_for_user = command_hint(listen, OPERATIONS_MAP.keys())
             if hint_for_user:  # not empty string
