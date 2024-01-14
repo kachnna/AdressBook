@@ -16,10 +16,7 @@ class Name(Field):
 
     @value.setter
     def value(self, new_value):
-        if new_value == "":
-            self._value = None
-        else:
-            self._value = new_value
+        self._value = new_value
 
     def __lt__(self, other):
         return self.value < other.value
@@ -35,7 +32,10 @@ class Phone(Field):
     def value(self, new_value):
         if new_value is not None and not self.validate_phone(new_value):
             raise ValueError("Invalid phone number format")
-        self._value = new_value
+        if new_value == "":
+            self._value = None
+        else:
+            self._value = new_value
 
     def validate_phone(self, value):
         if len(value) == 0:
@@ -57,7 +57,10 @@ class Email(Field):
     def value(self, new_value):
         if new_value is not None and not self.validate_email(new_value):
             raise ValueError("Invalid email address format")
-        self._value = new_value
+        if new_value == "":
+            self._value = None
+        else:
+            self._value = new_value
 
     def validate_email(self, value):
         if len(value) == 0:
@@ -78,7 +81,10 @@ class Birthday(Field):
     def value(self, new_value):
         if new_value is not None and not self.validate_birthday(new_value):
             raise ValueError("Incorrect data format, should be YYYY-MM-DD")
-        self._value = new_value
+        if new_value == "":
+            self._value = None
+        else:
+            self._value = new_value
 
     def validate_birthday(self, value):
         date_format = "%Y-%m-%d"
@@ -97,20 +103,12 @@ class Address(Field):
     def value(self):
         return self._value
 
-    # @value.setter
-    # def value(self, new_value):
-    #     if new_value is not None and not self.validate_address(new_value):
-    #         raise ValueError("Invalid address format")
-
-    #     self._value = new_value
-
-    # def validate_address(self, value):
-    #     address_parts = [part.strip() for part in value.split(",")]
-    #     return len(address_parts) == 4
-
     @value.setter
     def value(self, new_value):
-        self._value = new_value
+        if new_value == "":
+            self._value = None
+        else:
+            self._value = new_value
 
 
 @dataclass
@@ -121,7 +119,10 @@ class Tag(Field):
 
     @value.setter
     def value(self, new_value):
-        self._value = new_value
+        if new_value == "":
+            self._value = None
+        else:
+            self._value = new_value
 
 
 @dataclass
@@ -132,7 +133,10 @@ class Notes(Field):
 
     @value.setter
     def value(self, new_value):
-        self._value = new_value
+        if new_value == "":
+            self._value = None
+        else:
+            self._value = new_value
 
 
 @dataclass
@@ -144,31 +148,62 @@ class Record:
     address: Address
     tag: Tag
     notes: Notes
+#########################   EDIT    ##########################################################################
+
+    def edit_name(self, new_name):
+        self.name.value = new_name
+        print(f"Name of the contact updated to {new_name}.")
 
     def edit_phone(self, new_phone):
-        self.phone = new_phone
-        print(f"Phone number updated for {self.name}")
+        self.phone.value = new_phone
+        print(f"Phone number updated for {self.name.value}")
 
     def edit_email(self, new_email):
-        self.email = new_email
-        print(f"Email updated for {self.name}")
+        self.email.value = new_email
+        print(f"Email updated for {self.name.value}")
 
     def edit_birthday(self, new_birthday):
-        self.birthday = new_birthday
-        print(f"Birthday updated for {self.name}")
+        self.birthday.value = new_birthday
+        print(f"Birthday updated for {self.name.value}")
 
+    def edit_address(self, new_address):
+        self.address.value = new_address
+        print(f"Address updated for {self.name.value}")
+
+    def edit_tag(self, new_tag):
+        self.tag.value = new_tag
+        print(f"Tag updated for {self.name.value}")
+
+    def edit_notes(self, new_notes):
+        self.notes.value = new_notes
+        print(f"Notes updated for {self.name.value}")
+
+####################### DELETE  ###################################################################################
     def delete_phone(self):
-        self.phone = None
-        print(f"Phone number deleted for {self.name}")
+        self.phone.value = None
+        print(f"Phone number deleted for {self.name.value}")
 
     def delete_email(self):
-        self.email = None
-        print(f"Email deleted for {self.name}")
+        self.email.value = None
+        print(f"Email deleted for {self.name.value}")
 
     def delete_birthday(self):
-        self.birthday = None
-        print(f"Birthday deleted for {self.name}")
+        self.birthday.value = None
+        print(f"Birthday deleted for {self.name.value}")
 
+    def delete_address(self):
+        self.address.value = None
+        print(f"Address deleted for {self.name.value}")
+
+    def delete_notes(self):
+        self.notes.value = None
+        print(f"Notes deleted for {self.name.value}")
+
+    def delete_tag(self):
+        self.tag.value = None
+        print(f"Tag deleted for {self.name.value}")
+
+###########################  DAYS TO BIRTHDAY   #####################################################################
     def days_to_birthday(self, contact_name, contact_birthday):
         if contact_birthday is not None and len(contact_birthday) > 0:
             current_datetime = datetime.now()
@@ -189,27 +224,3 @@ class Record:
                 print(f"Days until {contact_name}'s birthday: {to_birthday}")
         else:
             print(f"{contact_name} has no birthday entered in the address book.")
-
-    def edit_address(self, new_address):
-        self.address = new_address
-        print(f"Address updated for {self.name}")
-
-    def delete_address(self):
-        self.address = None
-        print(f"Address deleted for {self.name}")
-
-    def edit_notes(self, new_notes):
-        self.notes = new_notes
-        print(f"Notes updated for {self.name}")
-
-    def delete_notes(self):
-        self.notes = None
-        print(f"Notes deleted for {self.name}")
-
-    def edit_tag(self, new_tag):
-        self.tag = new_tag
-        print(f"Tag updated for {self.name}")
-
-    def delete_tag(self):
-        self.tag = None
-        print(f"Tag deleted for {self.name}")

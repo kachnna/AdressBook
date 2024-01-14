@@ -84,6 +84,8 @@ class AddressBook(UserDict):
 
     @input_error
     def check_if_object_exists(self, name):
+        if name is None:
+            pass
         results = {}
         contact_name = name if isinstance(name, str) else name.value
         for key, obj in self.contacts.items():
@@ -103,10 +105,6 @@ class AddressBook(UserDict):
             list_of_id.append(key_id)
         max_ID = max(list_of_id)
         return max_ID
-
-    @input_error
-    def func_hello(self):
-        print("How can I help you?")
 
     @input_error
     def func_find(self, name):
@@ -214,7 +212,7 @@ class AddressBook(UserDict):
                 contact_counter += 1
         if contact_counter == 0:
             raise Contact_not_found
-# SHOW ALL Contacts #
+# SHOW ALL #
 
     @input_error
     def show(self):
@@ -225,19 +223,7 @@ class AddressBook(UserDict):
         if not self.contacts:
             print("Address book is empty.")
         else:
-            print("{:^100}".format("-" * 100))
-            print("{:^20}|{:^30}|{:^50}".format("Name", "Tag", "Notes"))
-            print("{:^100}".format("-" * 100))
-            contacts_sorted = dict(
-                sorted(self.contacts.items(), key=lambda x: x[0]))
-            for name, contact in contacts_sorted.items():
-                print(
-                    "{:^20}|{:^30}|{:^50}".format(
-                        name,
-                        self.check_value(contact[4]),
-                        self.check_value(contact[5]),
-                    )
-                )
+            return self.contacts
 
     @input_error
     def func_upcoming_birthdays(self, days_str):
@@ -357,6 +343,7 @@ class AddressBook(UserDict):
             else:
                 break
 
+# add
     @input_error
     def add(self, name, phone, email, birthday, address, tag, notes):
         id = int(self.check_latest_id() + 1)
@@ -364,6 +351,27 @@ class AddressBook(UserDict):
                              birthday.value, address.value, tag.value, notes.value)
         self.contacts[id] = new_contact
         return dict(filter(lambda item: item[0] == id, self.contacts.items()))
+
+# edit
+    @input_error
+    def edit(self, contact, att, new_info):
+        for id, obj in contact.items():
+            if att == "name":
+                obj.edit_name(new_info)
+            elif att == "phone":
+                obj.edit_phone(new_info)
+            elif att == "email":
+                obj.edit_email(new_info)
+            elif att == "birthday":
+                obj.edit_birthday(new_info)
+            elif att == "address":
+                obj.edit_address(new_info)
+            elif att == "tag":
+                obj.edit_tag(new_info)
+            elif att == "notes":
+                obj.edit_notes(new_info)
+            else:
+                return f"Unable to edit."
 
     @input_error
     def func_birthday(self, name):
@@ -381,170 +389,27 @@ class AddressBook(UserDict):
         else:
             raise Contact_not_found
 
-    @input_error
-    def func_edit_phone(self, name, new_phone):
-        if name in self.contacts:
-            # contact = Record(
-            #     name,
-            #     self.contacts[name][0],
-            #     self.contacts[name][1],
-            #     self.contacts[name][2],
-            #     self.contacts[name][3],
-            #     self.contacts[name][4],
-            #     self.contacts[name][5],
-            # )
-            # contact.edit_phone(Phone(new_phone)._value)
-            self.contacts[name][0] = Phone(new_phone).value
-            print("Phone changed successfully")
-        else:
-            raise Contact_not_found
-
-    @input_error
-    def func_edit_email(self, name, new_email):
-        if name in self.contacts:
-            # contact_data = self.contacts[name]
-            # contact = Record(
-            #     name,
-            #     contact_data[0] if len(contact_data) > 0 else None,
-            #     contact_data[1] if len(contact_data) > 1 else None,
-            #     contact_data[2] if len(contact_data) > 2 else None,
-            #     contact_data[3] if len(contact_data) > 3 else None,
-            # )
-            # contact.edit_email(new_email)
-            self.contacts[name][1] = Email(new_email).value
-            print("e-mail changed successfully")
-        else:
-            raise Contact_not_found
-
-    @input_error
-    def func_edit_birthday(self, name, new_birthday):
-        if name in self.contacts:
-            # contact = Record(
-            #     name,
-            #     self.contacts[name][0],
-            #     self.contacts[name][1],
-            #     self.contacts[name][2],
-            #     self.contacts[name][3],
-            #     self.contacts[name][4],
-            #     self.contacts[name][5],
-            # )
-            # contact.edit_birthday(Birthday(new_birthday)._value)
-            self.contacts[name][2] = Birthday(new_birthday).value
-            print("birthday date changed successfully")
-        else:
-            raise Contact_not_found
+# delete
 
     @input_error
     def delete(self, key):
         self.contacts.pop(key)
 
+# delete contact information
     @input_error
-    def func_edit_address(self, name, new_address):
-        if name in self.contacts:
-            # contact = Record(
-            #     name,
-            #     self.contacts[name][0],
-            #     self.contacts[name][1],
-            #     self.contacts[name][2],
-            #     self.contacts[name][3],
-            #     self.contacts[name][4],
-            #     self.contacts[name][5],
-            # )
-            # contact.edit_address(Address(new_address)._value)
-            # Aktualizacja adresu
-            self.contacts[name][3] = Address(new_address).value
-            print("address changed successfully")
-        else:
-            raise Contact_not_found
-
-    @input_error
-    def func_edit_tag(self, name, new_tag):
-        if name in self.contacts:
-            contact = Record(
-                name,
-                self.contacts[name][0],
-                self.contacts[name][1],
-                self.contacts[name][2],
-                self.contacts[name][3],
-                self.contacts[name][4],
-                self.contacts[name][5],
-            )
-            print(f"Current tag of {name}:\n {self.contacts[name][4]}")
-            confirm = input(
-                f"If you still want to edit it, please write (y/n):")
-            if confirm in ["y", "Y", "Yes", "yes", "True"]:
-                contact.edit_tag(Tag(new_tag)._value)
-                self.contacts[contact.name][4] = contact.tag
+    def delete_info(self, contact, info_delete):
+        for id, obj in contact.items():
+            if info_delete == "phone":
+                obj.delete_phone()
+            elif info_delete == "email":
+                obj.delete_email()
+            elif info_delete == "birthday":
+                obj.delete_birthday()
+            elif info_delete == "address":
+                obj.delete_address()
+            elif info_delete == "tag":
+                obj.delete_tag()
+            elif info_delete == "notes":
+                obj.delete_notes()
             else:
-                print("Tag was not changed.")
-        else:
-            raise Contact_not_found
-
-    @input_error
-    def func_edit_notes(self, name, new_notes):
-        if name in self.contacts:
-            contact = Record(
-                name,
-                self.contacts[name][0],
-                self.contacts[name][1],
-                self.contacts[name][2],
-                self.contacts[name][3],
-                self.contacts[name][4],
-                self.contacts[name][5],
-            )
-            print(f"Current notes of {name}:\n {self.contacts[name][5]}")
-            confirm = input(
-                f"If you still want to edit it, please write (y/n):")
-            if confirm in ["y", "Y", "Yes", "yes", "True"]:
-                contact.edit_notes(Notes(new_notes)._value)
-                self.contacts[contact.name][5] = contact.notes
-            else:
-                print("Note was not changed.")
-        else:
-            raise Contact_not_found
-
-    @input_error
-    def func_exit(self):
-        print(
-            """
-                                           ..::::------:::..                                           
-                                 .:-=+*#%@@@@@@@@@@@@@@@@@@@@%##*+=:.                                  
-                            :-+#%@@@@@@@@@@@@%%##******##%%@@@@@@@@@@@#*=:                             
-                        :+#@@@@@@@%#*+=-:..                 ..:-=+*%@@@@@@@#+-.                        
-                    .=*@@@@@@#+=:                                    :-+#@@@@@@#=.                     
-                  -#@@@@@#=:    .-=*:        -.         =         =+-:    :=*%@@@@#=.                  
-               :*@@@@%+-    :=*%@@@=         +%:      .*@:        .#@@@#+-.   :=#@@@@#-                
-             -#@@@%+:   :+#@@@@@@@+          #@@#*****@@@-         .%@@@@@@#+:   .=%@@@%=              
-           :#@@@#-   :+%@@@@@@@@@#           %@@@@@@@@@@@=          -@@@@@@@@@%+:   :*@@@%=            
-         .*@@@#-   -#@@@@@@@@@@@@:           @@@@@@@@@@@@*           #@@@@@@@@@@@#-   :*@@@#:          
-        :%@@%-   -%@@@@@@@@@@@@@%           .@@@@@@@@@@@@#           =@@@@@@@@@@@@@%-   :#@@@=         
-       =@@@*.  .#@@@@@@@@@@@@@@@#           -@@@@@@@@@@@@@           -@@@@@@@@@@@@@@@#.   +@@@*        
-      =@@@=   -@@@@@@@@@@@@@@@@@%           =@@@@@@@@@@@@@:          +@@@@@@@@@@@@@@@@@-   -%@@*       
-     =@@@=   +@@@@@@@@@@@@@@@@@@@-          %@@@@@@@@@@@@@=          %@@@@@@@@@@@@@@@@@@+   :%@@*      
-    :@@@=   =@@@@@@@@@@@@@@@@@@@@%.        =@@@@@@@@@@@@@@@:        *@@@@@@@@@@@@@@@@@@@@=   :@@@-     
-    #@@#   :@@@@@@@@@@@@@@@@@@@@@@%-      +@@@@@@@@@@@@@@@@%-     :#@@@@@@@@@@@@@@@@@@@@@@:   +@@%     
-   .@@@:   *@@@@@@@@@@@@@@@@@@@@@@@@%*==*%@@@@@@@@@@@@@@@@@@@%*+*#@@@@@@@@@@@@@@@@@@@@@@@@*   .@@@=    
-   =@@%    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    *@@*    
-   +@@#   .@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@.   +@@%    
-   +@@#   .@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    Good bye!    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@.   +@@%    
-   =@@@    %@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%    *@@*    
-   .@@@-   =@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@=   .@@@=    
-    *@@#    #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#    +@@%     
-    .@@@+    *@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#.   :@@@-     
-     -@@@=    -%@@@@@@@@@@=.   :=#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%+-:.:=%@@@@@@@@@@#.   :%@@+      
-      =@@@=    .*@@@@@@@@-        :#@@@@@*==*%@@@@@@@@@@@%*++%@@@@@*:       .%@@@@@@@@=    -@@@*       
-       =@@@*.    :*@@@@@@.          =@@%:     =@@@@@@@@%-     +@@%-          +@@@@@@*.    +@@@+        
-        :%@@%=     :*@@@@=           :%:       .%@@@@@#.       *%.           #@@@@*:    -%@@@=         
-         .+@@@%-     .+%@%.                     .%@@@#         ..           :@@%+.    :#@@@#.          
-           :#@@@%=.     :+*.                     :@@@:                     .#+-     -#@@@%-            
-             :#@@@@*:                             +@+                      .     :+%@@@%=              
-               :+@@@@%+-                          .%.                         :+%@@@@*-                
-                  -*@@@@@#=:                       :                      :=*@@@@@#=.                  
-                    .-*%@@@@@#*=:.                                   :-+#@@@@@@*=.                     
-                        :=*%@@@@@@@#*+=-::.                ..:-=+*#%@@@@@@@#+:                         
-                            .-+*%@@@@@@@@@@@@%%%#######%%%@@@@@@@@@@@%#+-:                             
-                                  :-=+*#%%@@@@@@@@@@@@@@@@@@%%#*+=-:.                                  
-                                           ...::------:::.                      
-"""
-        )
-        exit()
+                return f"Unable to delete."

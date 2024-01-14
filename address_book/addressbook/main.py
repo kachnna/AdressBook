@@ -1,9 +1,5 @@
-<<<<<<< Updated upstream
-from addresbook import AddressBook
-=======
 from address_book import AddressBook
 from record import Notes, Record, Name, Phone, Email, Birthday, Address, Tag
->>>>>>> Stashed changes
 from thefuzz import fuzz
 import inter
 
@@ -54,112 +50,12 @@ def command_hint(user_str: str, commands, threshold: int = 0) -> str:
         hint = f"Did you mean?: {', '.join(hits)}"
     return hint
 
-# add
+################## HELP ######################
 
 
-def add_func(obj):
-    to_add = True
-    print("\nPlease complete the information below. Name is mandatory, but the rest you can skip by clicking Enter.")
-    name = Name(input("\nEnter name*: "))
-    contacts = obj.check_if_object_exists(name)
-
-    if len(contacts) > 0:
-        print("\nI've found in the Address Book the contact(s) with the same name:")
-        inter.display_contacts(inter.ViewContact(), contacts)
-        choice = input("\nWould you like to update the contact? (Y/N): ")
-        if choice.lower() in ["y", "yes", "true"]:
-            to_add = False
-            if len(contacts) > 1:
-                while True:
-                    number = int(
-                        input("\nPlease enter the ID number of the contact you want to update: "))
-                    if number in contacts.keys():
-                        break
-                    else:
-                        print(
-                            "\nSorry, but I couldn't find any contacts with this ID. Try again...\n")
-                key = number
-                value = contacts[number]
-            else:
-                key = list(contacts.keys())[0]
-                value = list(contacts.values())[0]
-            print(
-                "\nComplete the information below that you want to update or skip by clicking Enter.")
-
-        else:
-            print(
-                f"\nContinue entering the information for a new contact: {name.value}\n")
-
-    phone = Phone(input("Enter new phone: "))
-    email = Email(input("Enter new email: "))
-    birthday = Birthday(input("Enter new birthday: "))
-    address = Address(input("Enter new address: "))
-    tag = Tag(input("Enter new tag: "))
-    notes = Notes(input("Enter new notes: "))
-
-    if obj.check_entered_values(name, phone, email, birthday, address, tag, notes):
-        if to_add:
-            new_contact = obj.add(name, phone, email,
-                                  birthday, address, tag, notes)
-            obj.save_to_file()
-            inter.display_contacts(inter.ViewContact(), new_contact)
-            print("Contact added successfully.")
-        else:
-            obj_updated = obj.edit(
-                value, name, phone, email, birthday, address, tag, notes)
-            obj.save_to_file()
-            results_to_display = {}
-            results_to_display[key] = obj_updated
-            inter.display_contacts(inter.ViewContact(), results_to_display)
-            print("Contact updated successfully.")
-    else:
-        raise ValueError(
-            "You did not enter any data to change the contact information. Please try again.")
-
-# show all
-
-
-def show_all_func(object):
-    result = object.show()
-    inter.display_contacts(inter.ViewContacts(), result)
-
-# delete
-
-
-def delete_func(object):
-    name = Name(input("\nEnter name of contact you would like to delete: "))
-    contact = object.check_if_object_exists(name)
-    if len(contact) > 0:
-        print("\nI've found in the Address Book the contact you want to delete:")
-        inter.display_contacts(inter.ViewContact(), contact)
-        choice = input(
-            "\nPlease confirm if this is the contact you want to delete? (Y/N): ")
-        if choice.lower() in ["y", "yes", "true"]:
-            for contact_id in contact.keys():
-                object.delete(contact_id)
-                object.save_to_file()
-            print("\nContact deleted successfully.")
-        else:
-            print("\n No contact was delete from this Address Book.")
-    else:
-        print(f"Contact with ID {name} not found.")
-
-
-def main():
+def help(object):
     print(
-        """
-       db        88    ad88                                88  
-      d88b       88   d8\"                                  88  
-     d8\'`8b      88   88                                   88  
-    d8\'  `8b     88 MM88MMM 8b,dPPYba,  ,adPPYba,  ,adPPYb,88  
-   d8YaaaaY8b    88   88    88P\'   \"Y8 a8P_____88 a8\"    `Y88  
-  d8\"\"\"\"\"\"\"\"8b   88   88    88         8PP\"\"\"\"\"\"\" 8b       88  
- d8\'        `8b  88   88    88         \"8b,   ,aa \"8a,   ,d88  
-d8\'          `8b 88   88    88          `\"Ybbd8\"\'  `\"8bbdP\"Y8 
-
-Hello! I am your virtual assistant.
-What would you like to do with your Address Book?
-Choose one of the commands:
+        """Choose one of the commands:
     - hello - let's say hello,
     - find - to find a contact by name,
     - search - to find a contact after entering keyword (except tag and notes),
@@ -178,93 +74,257 @@ Choose one of the commands:
     - edit notes - to change notes of the user,      
     - delete - to remove contact from Address Book,
     - good bye, close, exit or . - to say good bye and close the program.
-After entering the command, you will be asked for additional information if needed to complete the command."""
+After entering the command, you will be asked for additional information if needed to complete the command.""")
+
+###################     HELLO   ###########################
+
+
+def func_hello(object):
+    print("How can I help you?")
+
+##################### ADD ##############################
+
+
+def add_func(obj):
+    to_add = True
+    print("\nPlease complete the information below. Name is mandatory, but the rest you can skip by clicking Enter.")
+    name = Name(input("\nEnter name*: "))
+    contact = obj.check_if_object_exists(name)
+
+    if len(contact) > 0:
+        print("\nI've found in the Address Book the contact(s) with the same name:")
+        inter.display_contacts(inter.ViewContact(), contact)
+        choice = input("\nWould you like to update the contact? (Y/N): ")
+        if choice.lower() in ["y", "yes", "true"]:
+            to_add = False
+            while True:
+                att = input("\nPlease choose which information would you like to change? "
+                            "\nName, Phone, Email, Birthday, Address, Tag, or Notes: ").lower().strip()
+
+                if att in ["name", "phone", "email", "birthday", "address", "tag", "notes"]:
+                    new_value = input(
+                        f"Input new {att} of the contact (press Enter to keep current): ").strip()
+
+                    if new_value:
+                        object.edit(contact, att, new_value)
+                    else:
+                        print(f"Keeping current {att}.")
+
+                    another_change = input(
+                        "\nDo you want to make another change? (Y/N): ")
+                    if another_change.lower() not in ["y", "yes", "true"]:
+                        object.save_to_file()
+                        print("Contact editing complete.")
+                        break
+                else:
+                    print("\nInvalid choice. Please choose a valid attribute.")
+                    continue
+        else:
+            print("Contact not confirmed for editing.")
+
+    phone = Phone(input("Enter new phone: "))
+    email = Email(input("Enter new email: "))
+    birthday = Birthday(input("Enter new birthday: "))
+    address = Address(input("Enter new address: "))
+    tag = Tag(input("Enter new tag: "))
+    notes = Notes(input("Enter new notes: "))
+
+    if obj.check_entered_values(name, phone, email, birthday, address, tag, notes):
+        if to_add:
+            new_contact = obj.add(name, phone, email,
+                                  birthday, address, tag, notes)
+            obj.save_to_file()
+            inter.display_contacts(inter.ViewContact(), new_contact)
+            print("Contact added successfully.")
+        raise ValueError(
+            "You did not enter any data to change the contact information. Please try again.")
+
+####################### SHOW ###########################
+
+
+def show_all_func(object):
+    result = object.show()
+    inter.display_contacts(inter.ViewContacts(), result)
+
+###################### SHOW ALL NOTES ####################
+
+
+def show_notes(object):
+    result = object.func_show_notes()
+    inter.display_contacts(inter.ViewNotes(), result)
+
+######################### EDIT ##########################
+
+
+def edit_func(object):
+    name = Name(input("\nEnter name of contact you would like to edit: "))
+    contact = object.check_if_object_exists(name)
+    if contact:
+        print("\nI've found in the Address Book the contact you want to edit:")
+        inter.display_contacts(inter.ViewContact(), contact)
+        choice = input(
+            "\nPlease confirm if this is the contact you want to edit? (Y/N): ")
+
+        if choice.lower() in ["y", "yes", "true"]:
+            while True:
+                att = input("\nPlease choose which information would you like to change? "
+                            "\nName, Phone, Email, Birthday, Address, Tag, or Notes: ").lower().strip()
+
+                if att in ["name", "phone", "email", "birthday", "address", "tag", "notes"]:
+                    new_value = input(
+                        f"Input new {att} of the contact (press Enter to keep current): ").strip()
+
+                    if new_value:
+                        object.edit(contact, att, new_value)
+                    else:
+                        print(f"Keeping current {att}.")
+
+                    another_change = input(
+                        "\nDo you want to make another change? (Y/N): ")
+                    if another_change.lower() not in ["y", "yes", "true"]:
+                        object.save_to_file()
+                        print("Contact editing complete.")
+                        break
+                else:
+                    print("\nInvalid choice. Please choose a valid attribute.")
+                    continue
+        else:
+            print("Contact not confirmed for editing.")
+    else:
+        print(f"Contact with name '{name.value}' not found.")
+
+################# DELETE ################################
+
+
+def delete_func(object):
+    name = Name(input("\nPlease enter name of the contact: "))
+    contact = object.check_if_object_exists(name)
+    if len(contact) > 0:
+        print("\nI've found in the Address Book this contact.")
+        inter.display_contacts(inter.ViewContact(), contact)
+        info_delete = input(
+            "\nWhat would you like to delete?\n Contact, Name, Phone, Email, Birthday, Address, Tag, or Notes: ")
+        if info_delete.lower().strip() == "contact":
+            choice_1 = input(
+                "\nAre you sure you want to delete hole contact form Addres Book? (Y/N): ")
+            if choice_1.lower().strip() in ["y", "yes", "true"]:
+                for contact_id in contact.keys():
+                    object.delete(contact_id)
+                    object.save_to_file()
+                print("\nContact deleted successfully.")
+            else:
+                print("\n No contact was delete from this Address Book.")
+        elif info_delete.lower().strip() in ["phone", "email", "birthday", "address", "tag", "notes"]:
+            while True:
+                choice_2 = input(
+                    f"You would like to delete {info_delete} of the {name.value} (Y/N): ")
+                if choice_2.lower().strip() in ["y", "yes", "true"]:
+                    object.delete_info(contact, info_delete)
+                else:
+                    print(f"{info_delete} was not deleted.")
+                another_change = input(
+                    "\nDo you want to make another change? (Y/N): ")
+                if another_change.lower().strip() not in ["y", "yes", "true"]:
+                    object.save_to_file()
+                    print("Delete complete.")
+                    break
+                else:
+                    print("\nInvalid choice. Please choose a valid attribute.")
+                    continue
+    else:
+        print(f"Contact not found.")
+
+
+def func_exit(object):
+    print(
+        """
+                                           ..::::------:::..                                           
+                                 .:-=+*#%@@@@@@@@@@@@@@@@@@@@%##*+=:.                                  
+                            :-+#%@@@@@@@@@@@@%%##******##%%@@@@@@@@@@@#*=:                             
+                        :+#@@@@@@@%#*+=-:..                 ..:-=+*%@@@@@@@#+-.                        
+                    .=*@@@@@@#+=:                                    :-+#@@@@@@#=.                     
+                  -#@@@@@#=:    .-=*:        -.         =         =+-:    :=*%@@@@#=.                  
+               :*@@@@%+-    :=*%@@@=         +%:      .*@:        .#@@@#+-.   :=#@@@@#-                
+             -#@@@%+:   :+#@@@@@@@+          #@@#*****@@@-         .%@@@@@@#+:   .=%@@@%=              
+           :#@@@#-   :+%@@@@@@@@@#           %@@@@@@@@@@@=          -@@@@@@@@@%+:   :*@@@%=            
+         .*@@@#-   -#@@@@@@@@@@@@:           @@@@@@@@@@@@*           #@@@@@@@@@@@#-   :*@@@#:          
+        :%@@%-   -%@@@@@@@@@@@@@%           .@@@@@@@@@@@@#           =@@@@@@@@@@@@@%-   :#@@@=         
+       =@@@*.  .#@@@@@@@@@@@@@@@#           -@@@@@@@@@@@@@           -@@@@@@@@@@@@@@@#.   +@@@*        
+      =@@@=   -@@@@@@@@@@@@@@@@@%           =@@@@@@@@@@@@@:          +@@@@@@@@@@@@@@@@@-   -%@@*       
+     =@@@=   +@@@@@@@@@@@@@@@@@@@-          %@@@@@@@@@@@@@=          %@@@@@@@@@@@@@@@@@@+   :%@@*      
+    :@@@=   =@@@@@@@@@@@@@@@@@@@@%.        =@@@@@@@@@@@@@@@:        *@@@@@@@@@@@@@@@@@@@@=   :@@@-     
+    #@@#   :@@@@@@@@@@@@@@@@@@@@@@%-      +@@@@@@@@@@@@@@@@%-     :#@@@@@@@@@@@@@@@@@@@@@@:   +@@%     
+   .@@@:   *@@@@@@@@@@@@@@@@@@@@@@@@%*==*%@@@@@@@@@@@@@@@@@@@%*+*#@@@@@@@@@@@@@@@@@@@@@@@@*   .@@@=    
+   =@@%    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    *@@*    
+   +@@#   .@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@.   +@@%    
+   +@@#   .@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    Good bye!    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@.   +@@%    
+   =@@@    %@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%    *@@*    
+   .@@@-   =@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@=   .@@@=    
+    *@@#    #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#    +@@%     
+    .@@@+    *@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#.   :@@@-     
+     -@@@=    -%@@@@@@@@@@=.   :=#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%+-:.:=%@@@@@@@@@@#.   :%@@+      
+      =@@@=    .*@@@@@@@@-        :#@@@@@*==*%@@@@@@@@@@@%*++%@@@@@*:       .%@@@@@@@@=    -@@@*       
+       =@@@*.    :*@@@@@@.          =@@%:     =@@@@@@@@%-     +@@%-          +@@@@@@*.    +@@@+        
+        :%@@%=     :*@@@@=           :%:       .%@@@@@#.       *%.           #@@@@*:    -%@@@=         
+         .+@@@%-     .+%@%.                     .%@@@#         ..           :@@%+.    :#@@@#.          
+           :#@@@%=.     :+*.                     :@@@:                     .#+-     -#@@@%-            
+             :#@@@@*:                             +@+                      .     :+%@@@%=              
+               :+@@@@%+-                          .%.                         :+%@@@@*-                
+                  -*@@@@@#=:                       :                      :=*@@@@@#=.                  
+                    .-*%@@@@@#*=:.                                   :-+#@@@@@@*=.                     
+                        :=*%@@@@@@@#*+=-::.                ..:-=+*#%@@@@@@@#+:                         
+                            .-+*%@@@@@@@@@@@@%%%#######%%%@@@@@@@@@@@%#+-:                             
+                                  :-=+*#%%@@@@@@@@@@@@@@@@@@%%#*+=-:.                                  
+                                           ...::------:::.                      
+"""
+    )
+    exit()
+
+
+def main():
+    print(
+        """
+       db        88    ad88                                88  
+      d88b       88   d8\"                                  88  
+     d8\'`8b      88   88                                   88  
+    d8\'  `8b     88 MM88MMM 8b,dPPYba,  ,adPPYba,  ,adPPYb,88  
+   d8YaaaaY8b    88   88    88P\'   \"Y8 a8P_____88 a8\"    `Y88  
+  d8\"\"\"\"\"\"\"\"8b   88   88    88         8PP\"\"\"\"\"\"\" 8b       88  
+ d8\'        `8b  88   88    88         \"8b,   ,aa \"8a,   ,d88  
+d8\'          `8b 88   88    88          `\"Ybbd8\"\'  `\"8bbdP\"Y8 
+
+Hello! I am your virtual assistant.
+What would you like to do with your Address Book? \nIf you need instructions write 'help'. """
     )
     user_addr_book = AddressBook()
     user_addr_book.read_from_file()
     OPERATIONS_MAP = {
-        "hello": user_addr_book.func_hello,
+        "hello": func_hello,
+        "help": help,
         "find": user_addr_book.func_find,
         "search": user_addr_book.func_search,
         "search notes": user_addr_book.func_search_notes,
         "show all": show_all_func,
         "show": user_addr_book.func_show,
-        "show notes": user_addr_book.func_show_notes,
+        "show notes": show_notes,
         "add": add_func,
         "birthday": user_addr_book.func_birthday,
         "upcoming birthdays": user_addr_book.func_upcoming_birthdays,
-        "edit phone": user_addr_book.func_edit_phone,
-        "edit email": user_addr_book.func_edit_email,
-        "edit birthday": user_addr_book.func_edit_birthday,
-        "edit address": user_addr_book.func_edit_address,
-        "edit tag": user_addr_book.func_edit_tag,
-        "edit notes": user_addr_book.func_edit_notes,
+        "edit": edit_func,
         "delete": delete_func,
-        "good bye": user_addr_book.func_exit,
-        "close": user_addr_book.func_exit,
-        "exit": user_addr_book.func_exit,
-        ".": user_addr_book.func_exit,
+        "good bye": func_exit,
+        "close": func_exit,
+        "exit": func_exit,
+        ".": func_exit,
     }
     while True:
         listen_enterred = input("\nEnter your command here: ")
         listen = listen_enterred.lower().strip()
         if listen in OPERATIONS_MAP:
-            if listen == "add":
-                OPERATIONS_MAP[listen](user_addr_book)
-            elif listen == "delete":
-                OPERATIONS_MAP[listen](user_addr_book)
-            elif listen == "upcoming birthdays":
-                keyword = input(
-                    "Which time frame from today would you like to check? Please input the number of days from now: "
-                ).strip()
-                OPERATIONS_MAP[listen](keyword)
-            elif listen in ["search", "search notes"]:
-                keyword = input("Enter keyword: ").strip()
-                OPERATIONS_MAP[listen](keyword)
-            elif listen == "edit phone":
-                name = input(
-                    "Enter name of the contact to edit phone: ").strip()
-                new_phone = input("Enter new phone number: ").strip()
-                OPERATIONS_MAP[listen](name, new_phone)
-            elif listen == "edit email":
-                name = input(
-                    "Enter name of the contact to edit email: ").strip()
-                new_email = input("Enter new email: ").strip()
-                OPERATIONS_MAP[listen](name, new_email)
-            elif listen == "edit birthday":
-                name = input(
-                    "Enter name of the contact to edit birthday: ").strip()
-                new_birthday = input("Enter new birthday: ").strip()
-                OPERATIONS_MAP[listen](name, new_birthday)
-            elif listen == "edit address":
-                name = input(
-                    "Enter name of the contact to edit address: ").strip()
-                new_address = input("Enter new address: ").strip()
-                OPERATIONS_MAP[listen](name, new_address)
-            elif listen == "edit tag":
-                name = input("Enter name of the contact to edit tag: ").strip()
-                new_tag = input("Enter new tag: ").strip()
-                OPERATIONS_MAP[listen](name, new_tag)
-            elif listen == "edit notes":
-                name = input("Enter name of the contact to edit tag: ").strip()
-                new_notes = input("Enter new notes: ").strip()
-                OPERATIONS_MAP[listen](name, new_notes)
-            elif listen == "show":
-                try:
-                    number_of_contacts = int(
-                        input("Enter number of contacts to display: ")
-                    )
-                    OPERATIONS_MAP[listen](number_of_contacts)
-                except:
-                    print("Entered number is not an integer. Please try again.")
-            elif listen in ["good bye", "close", "exit", "."]:
-                user_addr_book.save_to_file()
-                OPERATIONS_MAP[listen.lower()]()
-            else:
-                OPERATIONS_MAP[listen.lower()](user_addr_book)
+            OPERATIONS_MAP[listen](user_addr_book)
         else:
             hint_for_user = command_hint(listen, OPERATIONS_MAP.keys())
-            if hint_for_user:  # not empty string
+            if hint_for_user:
                 print(hint_for_user)
             else:
                 print("Invalid command.")
