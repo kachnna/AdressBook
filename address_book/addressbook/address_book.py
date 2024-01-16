@@ -6,7 +6,64 @@ from abc import abstractmethod, ABC
 from pathlib import Path
 from data import TestData
 from record import Notes, Record, Name, Phone, Email, Birthday, Address, Tag
-import textwrap
+
+
+class AbstractAddressBook(ABC):
+
+    @abstractmethod
+    def read_from_file(self):
+        # Read address book data from a file.
+        pass
+
+    @abstractmethod
+    def save_to_file(self):
+        # Save address book data to a file.
+        pass
+
+    @abstractmethod
+    def add(self, name, phone, email, birthday, address, tag, notes):
+        # Add a new contact to the address book.
+        pass
+
+    @abstractmethod
+    def edit(self, contact, att, new_info):
+        # Edit contact information.
+        pass
+
+    @abstractmethod
+    def delete(self, key):
+        # Delete a contact from the address book.
+        pass
+
+    @abstractmethod
+    def show(self):
+        # Show all contacts in the address book.
+        pass
+
+    @abstractmethod
+    def show_per_page(self, number_of_contacts, new_counting, iterator=None):
+        # Show contacts per page.
+        pass
+
+    @abstractmethod
+    def check_if_contact_exists(self, name):
+        # Find contacts by name.
+        pass
+
+    @abstractmethod
+    def check_if_tag_exists(self, tag):
+        # Find notes by tag.
+        pass
+
+    @abstractmethod
+    def birthday(self, contact_name):
+        # days till birthday
+        pass
+
+    @abstractmethod
+    def func_upcoming_birthdays(self, days_str):
+        # Find upcoming birthdays.
+        pass
 
 
 class Contact_not_found(Exception):
@@ -29,7 +86,7 @@ class MyContactsIterator:
 
 
 @dataclass
-class AddressBook(UserDict):
+class AddressBook(AbstractAddressBook):
     def __init__(self):
         self.counter: int
         self.filename = "contacts.bin"
@@ -77,13 +134,16 @@ class AddressBook(UserDict):
 
     @input_error
     def check_entered_values(self, name=None, phone=None, email=None, birthday=None, address=None, tag=None, notes=None):
-        if name.value is None and phone.value is None and email.value is None and birthday.value is None and address.value is None and tag.value is None and notes.value is None:
-            return False
-        else:
-            return True
+        try:
+            if name.value is None and phone.value is None and email.value is None and birthday.value is None and address.value is None and tag.value is None and notes.value is None:
+                return False
+            else:
+                return True
+        except Contact_not_found as e:
+            print(f"Contact not found.")
 
     @input_error
-    def check_if_object_exists(self, name):
+    def check_if_contact_exists(self, name):
         if name is None:
             pass
         results = {}
@@ -99,138 +159,62 @@ class AddressBook(UserDict):
         return results
 
     @input_error
-    def check_latest_id(self):
-        list_of_id = []
-        for key_id in self.contacts.keys():
-            list_of_id.append(key_id)
-        max_ID = max(list_of_id)
-        return max_ID
+    def check_if_tag_exists(self, tag):
+        if Tag is None:
+            pass
+        results = {}
+        contact_tag = tag if isinstance(tag, str) else tag.value
+        for key, obj in self.contacts.items():
+            if isinstance(obj.tag, str):
+                value = obj.tag
+            else:
+                value = obj.tag.value if hasattr(
+                    obj.tag, 'value') else obj.tag
+            if contact_tag.lower() in value.lower():
+                results[key] = obj
+        return results
 
-    @input_error
-    def func_find(self, name):
-        if name in self.contacts:
-            print("{:^60}".format("-" * 60))
-            print("{:^20}|{:^40}".format("Name", name))
-            print(
-                "{:^20}|{:^40}".format(
-                    "Phone", self.check_value(self.contacts[name][0])
-                )
-            )
-            print(
-                "{:^20}|{:^40}".format(
-                    "Email", self.check_value(self.contacts[name][1])
-                )
-            )
-            print(
-                "{:^20}|{:^40}".format(
-                    "Birthday", self.check_value(self.contacts[name][2])
-                )
-            )
-            print(
-                "{:^20}|{:^40}".format(
-                    "Address", self.check_value(self.contacts[name][3])
-                )
-            )
-            print(
-                "{:^20}|{:^40}".format(
-                    "Tag", self.check_value(self.contacts[name][4]))
-            )
-            print("{:^60}".format("-" * 60))
-            # print(f"Notes: {self.check_value(self.contacts[name][5]):{60}}")
-            print(
-                "\n".join(
-                    textwrap.wrap(
-                        f"Notes: {self.check_value(self.contacts[name][5])}", width=60
-                    )
-                )
-            )
-            print("{:^60}".format("-" * 60))
-        else:
-            raise Contact_not_found
-
-    @input_error
-    def func_search(self, keyword):
-        print("{:^150}".format("-" * 150))
-        print(
-            "{:^30}|{:^20}|{:^30}|{:^20}|{:^50}".format(
-                "Name", "Phone", "Email", "Birthday", "Address"
-            )
-        )
-        print("{:^150}".format("-" * 150))
-        contact_counter = 0
-        contacts_sorted = dict(
-            sorted(self.contacts.items(), key=lambda x: x[0]))
-        for key, value in contacts_sorted.items():
-            if (
-                keyword.lower() in key.lower()
-                or keyword in value[0]
-                or keyword in value[0].replace(" ", "")
-                or keyword.lower() in value[1].lower()
-                or keyword in value[2]
-                or keyword.lower() in value[3].lower()
-            ):
-                print(
-                    "{:^30}|{:^20}|{:^30}|{:^20}|{:^50}".format(
-                        key,
-                        self.check_value(value[0]),
-                        self.check_value(value[1]),
-                        self.check_value(value[2]),
-                        self.check_value(value[3]),
-                    )
-                )
-                contact_counter += 1
-        if contact_counter == 0:
-            raise Contact_not_found
-
-    @input_error
-    def func_search_notes(self, keyword):
-        print("{:^70}".format("-" * 70))
-        # print("{:^20}|{:^40}|{:^50}".format("Name", "Tag", "Notes"))
-        print("{:^20}|{:^40}".format("Name", "Tag"))
-        print("{:^70}".format("-" * 70))
-        contact_counter = 0
-        contacts_sorted = dict(
-            sorted(self.contacts.items(), key=lambda x: x[0]))
-        for key, value in contacts_sorted.items():
-            if (
-                keyword.lower() in value[4].lower()
-                or keyword.lower() in value[5].lower()
-            ):
-                print("{:^20}|{:^40}".format(key, self.check_value(value[4])))
-                print("{:^70}".format("-" * 70))
-                print(
-                    "\n".join(
-                        textwrap.wrap(
-                            f"Notes: {self.check_value(value[5])}",
-                            width=70,
-                        )
-                    )
-                )
-
-                print("{:^70}".format("=" * 70))
-
-                contact_counter += 1
-        if contact_counter == 0:
-            raise Contact_not_found
-# SHOW ALL #
+# SHOW #
 
     @input_error
     def show(self):
-        return self.contacts
-
-    @input_error
-    def func_show_notes(self):
         if not self.contacts:
             print("Address book is empty.")
         else:
             return self.contacts
 
     @input_error
+    def show_per_page(self, number_of_contacts, new_counting, iterator=None):
+        if new_counting == True:
+            self.counter = 0
+            iterator = iter(
+                sorted(self.contacts.items(), key=lambda x: x[1].name))
+        is_last = False
+        contacts_to_display = {}
+        if self.counter * number_of_contacts < len(self.contacts):
+            for _ in range(number_of_contacts):
+                try:
+                    key, obj = next(iterator)
+                    contacts_to_display[key] = obj
+                except StopIteration:
+                    break
+        self.counter += 1
+        if self.counter * number_of_contacts >= len(self.contacts):
+            is_last = True
+        return self.counter, iterator, contacts_to_display, is_last
+# birthdays
+
+    @input_error
+    def birthday(self, contact_name):
+        results_for_birthday = {}
+        for id, obj in contact_name.items():
+            results_for_birthday[id] = [
+                obj, obj.days_to_birthday(obj.birthday.value)]
+        return results_for_birthday
+
+#  upcoming birthdays
+    @input_error
     def func_upcoming_birthdays(self, days_str):
-        def month_sort_key(date_str):
-            date = datetime.strptime(date_str, "%d %B (%A)")
-            current_month = datetime.now().month
-            return (date.month - current_month) % 12
 
         today = datetime.now()
         formatted_date = today.strftime("%d %B %Y")
@@ -243,10 +227,11 @@ class AddressBook(UserDict):
         birthdays_list = {}
         today_birthday = {}
 
-        for name, user_info in self.contacts.items():
-            birthday_str = user_info[2]
-            phone = user_info[0]
-            email = user_info[1]
+        for id, user_info in self.contacts.items():
+            name = user_info.name.value
+            birthday_str = user_info.birthday.value
+            phone = user_info.phone.value
+            email = user_info.email.value
             birthday = datetime.strptime(birthday_str, "%Y-%m-%d").date()
 
             birthday_this_year = birthday.replace(year=today.year)
@@ -268,80 +253,7 @@ class AddressBook(UserDict):
                     today_birthday[day_of_week] = []
                 today_birthday[day_of_week].append((name, phone, email))
 
-        if not any(birthdays_list.values()) and not any(today_birthday.values()):
-            print(f"\nNone of your contacts have upcoming birthdays in this period.")
-        else:
-            print(
-                "   O O O O \n" "  _|_|_|_|_\n" " |         |\n",
-                "|         |\n",
-                "|_________|\n",
-            )
-        if any(today_birthday.values()):
-            print('Someone has birthday today, so wish "HAPPY BIRTHDAY" today to:')
-            print("{:^90}".format("*" * 90))
-            print("{:^30}|{:^30}|{:^30}".format("Name", "Phone", "Email"))
-            print("{:^90}".format("*" * 90))
-            for day, users in sorted(today_birthday.items(), key=lambda x: x[0]):
-                for user_info in users:
-                    print("{:^30}|{:^30}|{:^30}".format(*user_info))
-                    print("*" * 90)
-        if any(birthdays_list.values()):
-            print("\nSend birthday wishes to your contact on the upcoming days:")
-            print("{:^120}".format("-" * 120))
-            print(
-                "{:^30}|{:^30}|{:^30}|{:^30}".format(
-                    "Birthday", "Name", "Phone", "Email"
-                )
-            )
-            print("{:^120}".format("-" * 120))
-            for day, users in sorted(
-                birthdays_list.items(), key=lambda x: month_sort_key(x[0])
-            ):
-                for user_info in users:
-                    print("{:^30}|{:^30}|{:^30}|{:^30}".format(day, *user_info))
-                    print("-" * 120)
-
-    @input_error
-    def func_show(self, number_of_contacts):
-        contacts_sorted = dict(
-            sorted(self.contacts.items(), key=lambda x: x[0]))
-        iterator = iter(contacts_sorted.items())
-        len_of_dictionary = len(list(contacts_sorted.keys()))
-        self.counter = 0
-        while True:
-            self.counter += 1
-            print("\n{:^150}".format("-" * 150))
-            print(f"Page {self.counter}")
-            print("{:^150}".format("-" * 150))
-            print(
-                "{:^30}|{:^20}|{:^30}|{:^20}|{:^50}".format(
-                    "Name", "Phone", "Email", "Birthday", "Address"
-                )
-            )
-            print("{:^150}".format("-" * 150))
-            for _ in range(number_of_contacts):
-                try:
-                    name, contact = next(iterator)
-                    print(
-                        "{:^30}|{:^20}|{:^30}|{:^20}|{:^40}".format(
-                            name,
-                            self.check_value(contact[0]),
-                            self.check_value(contact[1]),
-                            self.check_value(contact[2]),
-                            self.check_value(contact[3]),
-                        )
-                    )
-                except StopIteration:
-                    break
-            print("{:^140}".format("-" * 140))
-            if self.counter * number_of_contacts < len_of_dictionary:
-                choice = input(
-                    f"Do you want to display next {number_of_contacts} contact(s)? (Y/N) "
-                )
-                if choice not in ["y", "Y", "Yes", "yes", "True"]:
-                    break
-            else:
-                break
+        return [today_birthday, birthdays_list]
 
 # add
     @input_error
@@ -372,22 +284,6 @@ class AddressBook(UserDict):
                 obj.edit_notes(new_info)
             else:
                 return f"Unable to edit."
-
-    @input_error
-    def func_birthday(self, name):
-        if name in self.contacts:
-            contact = Record(
-                name,
-                self.contacts[name][0],
-                self.contacts[name][1],
-                self.contacts[name][2],
-                self.contacts[name][3],
-                self.contacts[name][4],
-                self.contacts[name][5],
-            )
-            contact.days_to_birthday(contact.name, contact.birthday)
-        else:
-            raise Contact_not_found
 
 # delete
 

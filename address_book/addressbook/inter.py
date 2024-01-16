@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABC
 from record import Notes, Record, Name, Phone, Email, Birthday, Address, Tag
 from dataclasses import dataclass
+from datetime import datetime
 
 
 class ContactNotFound(Exception):
@@ -20,6 +21,12 @@ def check_value(value):
     if value is None:
         return ""
     return value
+
+
+def month_sort_key(date_str):
+    date = datetime.strptime(date_str, "%d %B (%A)")
+    current_month = datetime.now().month
+    return (date.month - current_month) % 12
 
 
 class AbstractView(ABC):
@@ -56,8 +63,8 @@ class ViewNotes(AbstractView):
     @input_error
     def display(self, data: dict):
         if data:
-            pattern = "|{:<20}|{:<20}|{:<136}"
-            separator = ("{:^176}".format("-" * 176))
+            pattern = "|{:<20}|{:^20}|{:<133}"
+            separator = ("{:<176}".format("-" * 176))
             print(separator)
             print(pattern.format("Name", "Tag", "Notes"))
             print(separator)
@@ -77,7 +84,7 @@ class ViewContact(AbstractView):
     def display(self, data: dict):
         if data:
             pattern_contacts = "| {:^5}| {:<25}| {:<15}| {:<30}| {:<15}| {:<60}|"
-            pattern_tag_notes = "|{:^161}|"
+            pattern_tag_notes = "|{:^10}|{:<150}|"
             separator = ("{:^163}".format("-" * 163))
             print(separator)
             print(pattern_contacts.format("Id", "Name",
@@ -94,24 +101,55 @@ class ViewContact(AbstractView):
                 ))
                 print(separator)
                 print("\n{:^163}".format("-" * 163))
-                print(pattern_tag_notes.format("Tag"))
+                print(pattern_tag_notes.format(
+                    "Tag", check_value(obj.tag.value)))
                 print(separator)
-                print(pattern_tag_notes.format(check_value(obj.tag.value)))
-                print(separator)
-                print(pattern_tag_notes.format("Notes"))
-                print(separator)
-                print(pattern_tag_notes.format(check_value(obj.notes.value)))
+                print(pattern_tag_notes.format(
+                    "Notes", check_value(obj.notes.value)))
                 print(separator)
         else:
             raise ContactNotFound
+
+
+class ViewTodayBirthday(AbstractView):
+    @input_error
+    def display(self, data: dict):
+        if data:
+            print("{:^90}".format("*" * 90))
+            print("{:^30}|{:^30}|{:^30}".format("Name", "Phone", "Email"))
+            print("{:^90}".format("*" * 90))
+            for day, users in sorted(data.items(), key=lambda x: x[0]):
+                for user_info in users:
+                    print("{:^30}|{:^30}|{:^30}".format(*user_info))
+                    print("*" * 90)
+
+
+class ViewUpcomingBirthdays(AbstractView):
+    @input_error
+    def display(self, data: dict):
+        if data:
+            print("{:^120}".format("-" * 120))
+            print(
+                "{:^30}|{:^30}|{:^30}|{:^30}".format(
+                    "Birthday", "Name", "Phone", "Email"
+                )
+            )
+            print("{:^120}".format("-" * 120))
+            for day, users in sorted(
+                data.items(), key=lambda x: month_sort_key(x[0])
+            ):
+                for user_info in users:
+                    print("{:^30}|{:^30}|{:^30}|{:^30}".format(day, *user_info))
+                    print("-" * 120)
 
 
 class ViewContactBirthday(AbstractView):
     @input_error
     def display(self, data: dict):
         if data:
-            pattern = "| {:^5}| {:<25}| {:<15}| {:<30}| {:<15}| {:<17}|"
+            pattern = "| {:^5}| {:<25}| {:<15}| {:<30}| {:<15}| {:^17}|"
             separator = ("{:^120}".format("-" * 120))
+            print(separator)
             print(pattern.format("Id", "Name ^", "Phone",
                   "Email", "Birthday", "Days to Birthday"))
             print(separator)

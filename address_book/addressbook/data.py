@@ -5,7 +5,7 @@ from record import Record, Name, Phone, Email, Birthday, Address, Tag, Notes
 class TestData:
     test_contacts = {1: Record(Name("Bruce Wayne"), Phone("600 123 456"), Email("bwayne@gothammail.com"), Birthday("1985-10-20"),
                                Address("174 Batman Street, Gotham City"),
-                               Tag("superhero"),
+                               Tag("hero"),
                                Notes(
                                    "Bruce Wayne is the billionaire who, after witnessing his parents' murder, using his wealth and intellect to protect Gotham City."),
                                ),

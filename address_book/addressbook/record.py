@@ -204,15 +204,16 @@ class Record:
         print(f"Tag deleted for {self.name.value}")
 
 ###########################  DAYS TO BIRTHDAY   #####################################################################
-    def days_to_birthday(self, contact_name, contact_birthday):
-        if contact_birthday is not None and len(contact_birthday) > 0:
+
+    def days_to_birthday(self, contact_birthday):
+        if contact_birthday is not None:
             current_datetime = datetime.now()
             birthday_strptime = datetime.strptime(contact_birthday, "%Y-%m-%d")
             birthday_date = datetime(
                 current_datetime.year, birthday_strptime.month, birthday_strptime.day
             )
             if current_datetime.date() == birthday_date.date():
-                print(f"Today is {contact_name}'s birthday!")
+                return "Today!"
             else:
                 if current_datetime.date() > birthday_date.date():
                     birthday_date = datetime(
@@ -221,6 +222,6 @@ class Record:
                         birthday_strptime.day,
                     )
                 to_birthday = (birthday_date - current_datetime).days
-                print(f"Days until {contact_name}'s birthday: {to_birthday}")
+                return to_birthday
         else:
-            print(f"{contact_name} has no birthday entered in the address book.")
+            return None

@@ -50,7 +50,29 @@ def command_hint(user_str: str, commands, threshold: int = 0) -> str:
         hint = f"Did you mean?: {', '.join(hits)}"
     return hint
 
-################## HELP ######################
+
+def input_error(func):
+    def wrapper(*args):
+        try:
+            return func(*args)
+        except KeyError as e:
+            print(
+                f"Username not provided or user not found. Try again.\nError details: {str(e)}\n"
+            )
+        except IndexError as e:
+            print(
+                f"Incorrect data has been entered. Try again.\nError details: {str(e)}\n"
+            )
+        except ValueError as e:
+            print(
+                f"I'm sorry, but I don't understand your request. Try again.\nError details: {str(e)}\n"
+            )
+        # except Exception as e:
+        #     print(f"Error caught: {e} in function {func.__name__} with values {args}")
+
+    return wrapper
+
+########################    HELP     ######################
 
 
 def help(object):
@@ -59,37 +81,32 @@ def help(object):
     - hello - let's say hello,
     - find - to find a contact by name,
     - search - to find a contact after entering keyword (except tag and notes),
-    - search notes - to find a contact name after entering keyword by searching by tag or notes,
-    - show all - to show all of your contacts from address book,
-    - show - to display N contacts from Address Book,
-    - show notes - to display contact name with tag and notes,
+    - search notes - to find a contact name after entering keyword by searching by tag,
+    - show all - to show all of your contacts from address book or show all your notes,
+    - show - to display 'n' contacts from Address Book,
     - add - to add new contact to Address Book,
     - birthday - to display days to birthday of the user,
     - upcoming birthdays - to check upcoming birthdays from your conatct in Address Book
-    - edit phone - to change phone of the user,
-    - edit email - to change email of the user,
-    - edit birthday - to change birthday of the user,
-    - edit address - to change address of the user,
-    - edit tag - to change tag of the user,
-    - edit notes - to change notes of the user,      
+    - edit - edit your contacts information      
     - delete - to remove contact from Address Book,
     - good bye, close, exit or . - to say good bye and close the program.
 After entering the command, you will be asked for additional information if needed to complete the command.""")
 
-###################     HELLO   ###########################
+#####################################    HELLO   ###########################
 
 
 def func_hello(object):
     print("How can I help you?")
 
-##################### ADD ##############################
+#####################################   ADD   ##############################
 
 
+@input_error
 def add_func(obj):
     to_add = True
     print("\nPlease complete the information below. Name is mandatory, but the rest you can skip by clicking Enter.")
     name = Name(input("\nEnter name*: "))
-    contact = obj.check_if_object_exists(name)
+    contact = obj.check_if_contact_exists(name)
 
     if len(contact) > 0:
         print("\nI've found in the Address Book the contact(s) with the same name:")
@@ -139,26 +156,128 @@ def add_func(obj):
         raise ValueError(
             "You did not enter any data to change the contact information. Please try again.")
 
-####################### SHOW ###########################
+#########################################   SHOW   ##########################
 
 
+@input_error
 def show_all_func(object):
-    result = object.show()
-    inter.display_contacts(inter.ViewContacts(), result)
+    choice = input(
+        "Would you like to see all contacts or notes.\n Write contacts or notes: ")
+    if choice.lower().strip() == "contacts":
+        result = object.show()
+        inter.display_contacts(inter.ViewContacts(), result)
+    elif choice.lower().strip() == "notes":
+        result = object.show()
+        inter.display_contacts(inter.ViewNotes(), result)
+    else:
+        print("Incorrect input. Should be 'contacts' or 'notes'.")
 
-###################### SHOW ALL NOTES ####################
+#################################  SHOW PER PAGE  ###########################
 
 
-def show_notes(object):
-    result = object.func_show_notes()
-    inter.display_contacts(inter.ViewNotes(), result)
+@input_error
+def show_per_page(object):
+    iter_state = None
+    counting = True
+    print("You want to display your 'n' contacts from Address Book.")
+    try:
+        n = int(
+            input("How many contacts you want to display at once.\nEnter 'n' number: "))
+    except ValueError:
+        print("Entered number is not an integer. Please try again.")
+        return
 
-######################### EDIT ##########################
+    while True:
+        page, iter_state, contacts, is_last = object.show_per_page(
+            n, counting, iter_state)
+        counting = False
+        print(f"\nPAGE {page}")
+        inter.display_contacts(inter.ViewContacts(), contacts)
+
+        if is_last:
+            print("\nI've displayed all contacts from the Address Book.")
+            break
+
+        choice = input(
+            f"\nDo you want to display next {n} contact(s)? (Y/N) ")
+
+        if choice.lower().strip() not in ["y", "yes", "true"]:
+            break
 
 
+################################    FIND CONTACT   #########################
+@input_error
+def find_func(object):
+    name = Name(input("\nEnter name of contact you would like to find: "))
+    contact = object.check_if_contact_exists(name)
+    if contact:
+        print("\nI've found in the Address Book the contact you are looking for")
+        inter.display_contacts(inter.ViewContact(), contact)
+    else:
+        print(f"Contact with name '{name.value}' not found.")
+
+#############################  SEARCH THROUGH NOTES    #####################
+
+
+@input_error
+def search_tag(object):
+    print("You would like to see notes with certain tag.")
+    tag = Tag(input("\nEnter the name of the tag: "))
+    tag_sear = object.check_if_tag_exists(tag)
+    if tag_sear:
+        print("\nI've found this tag.")
+        inter.display_contacts(inter.ViewNotes(), tag_sear)
+    else:
+        print(f"There is no tag {tag.value}.")
+
+#################################  days till birthday  ######################
+
+
+@input_error
+def contact_birthday(object):
+    name = Name(input(
+        "Which contact's birthday do you want to display (enter name)?: "))
+    contact = object.check_if_contact_exists(name)
+    if contact:
+        result = object.birthday(contact)
+        inter.display_contacts(
+            inter.ViewContactBirthday(), result)
+    else:
+        print(f"Contact with name '{name}' not found.")
+
+###########################   UPCOMING BIRTHDAYS  ##########################
+
+
+@input_error
+def upcoming_birthdays(object):
+    days_str = int(input("Find out who will be celebrating their birthday in the near future!\nHow many days in advance would you like to see your contacts' upcoming birthdays?\nEnter number of days:  "))
+    today = {}
+    upcoming = {}
+    list = object.func_upcoming_birthdays(days_str)
+    today = list[0]
+    upcoming = list[1]
+    if not any(today) and not any(upcoming):
+        print(f"\nNone of your contacts have upcoming birthdays in this period.")
+    else:
+        print(
+            "   O O O O \n" "  _|_|_|_|_\n" " |         |\n",
+            "|         |\n",
+            "|_________|\n",
+        )
+    if any(today):
+        print("\nSomeone has birthday today, so wish 'HAPPY BIRTHDAY' today to: ")
+        inter.display_contacts(inter.ViewTodayBirthday(), today)
+    if any(upcoming):
+        print("\nSend birthday wishes to your contact on the upcoming days:")
+        inter.display_contacts(inter.ViewUpcomingBirthdays(), upcoming)
+
+############################################ EDIT ##########################
+
+
+@input_error
 def edit_func(object):
     name = Name(input("\nEnter name of contact you would like to edit: "))
-    contact = object.check_if_object_exists(name)
+    contact = object.check_if_contact_exists(name)
     if contact:
         print("\nI've found in the Address Book the contact you want to edit:")
         inter.display_contacts(inter.ViewContact(), contact)
@@ -193,12 +312,13 @@ def edit_func(object):
     else:
         print(f"Contact with name '{name.value}' not found.")
 
-################# DELETE ################################
+###################################  DELETE  ###############################
 
 
+@input_error
 def delete_func(object):
     name = Name(input("\nPlease enter name of the contact: "))
-    contact = object.check_if_object_exists(name)
+    contact = object.check_if_contact_exists(name)
     if len(contact) > 0:
         print("\nI've found in the Address Book this contact.")
         inter.display_contacts(inter.ViewContact(), contact)
@@ -233,6 +353,8 @@ def delete_func(object):
                     continue
     else:
         print(f"Contact not found.")
+
+#######################################    EXIT    #########################
 
 
 def func_exit(object):
@@ -281,6 +403,7 @@ def func_exit(object):
     exit()
 
 
+@input_error
 def main():
     print(
         """
@@ -301,15 +424,13 @@ What would you like to do with your Address Book? \nIf you need instructions wri
     OPERATIONS_MAP = {
         "hello": func_hello,
         "help": help,
-        "find": user_addr_book.func_find,
-        "search": user_addr_book.func_search,
-        "search notes": user_addr_book.func_search_notes,
+        "find": find_func,
+        "search notes": search_tag,
         "show all": show_all_func,
-        "show": user_addr_book.func_show,
-        "show notes": show_notes,
+        "show": show_per_page,
         "add": add_func,
-        "birthday": user_addr_book.func_birthday,
-        "upcoming birthdays": user_addr_book.func_upcoming_birthdays,
+        "birthday": contact_birthday,
+        "upcoming birthdays": upcoming_birthdays,
         "edit": edit_func,
         "delete": delete_func,
         "good bye": func_exit,
