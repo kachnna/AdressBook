@@ -1,7 +1,7 @@
-from address_book import AddressBook
-from record import Notes, Record, Name, Phone, Email, Birthday, Address, Tag
+from book import inter
+from .address_book import AddressBook
+from .record import Notes, Name, Phone, Email, Birthday, Address, Tag
 from thefuzz import fuzz
-import inter
 
 
 def clossest_match(querry: str, commands):
@@ -110,7 +110,7 @@ def add_func(obj):
 
     if len(contact) > 0:
         print("\nI've found in the Address Book the contact(s) with the same name:")
-        inter.display_contacts(inter.ViewContact(), contact)
+        inter.ViewContact().display(contact)
         choice = input("\nWould you like to update the contact? (Y/N): ")
         if choice.lower() in ["y", "yes", "true"]:
             to_add = False
@@ -151,7 +151,7 @@ def add_func(obj):
             new_contact = obj.add(name, phone, email,
                                   birthday, address, tag, notes)
             obj.save_to_file()
-            inter.display_contacts(inter.ViewContact(), new_contact)
+            inter.ViewContact().display(new_contact)
             print("Contact added successfully.")
         raise ValueError(
             "You did not enter any data to change the contact information. Please try again.")
@@ -165,10 +165,10 @@ def show_all_func(object):
         "Would you like to see all contacts or notes.\n Write contacts or notes: ")
     if choice.lower().strip() == "contacts":
         result = object.show()
-        inter.display_contacts(inter.ViewContacts(), result)
+        inter.ViewContacts().display(result)
     elif choice.lower().strip() == "notes":
         result = object.show()
-        inter.display_contacts(inter.ViewNotes(), result)
+        inter.ViewNotes().display(result)
     else:
         print("Incorrect input. Should be 'contacts' or 'notes'.")
 
@@ -192,7 +192,7 @@ def show_per_page(object):
             n, counting, iter_state)
         counting = False
         print(f"\nPAGE {page}")
-        inter.display_contacts(inter.ViewContacts(), contacts)
+        inter.ViewContacts().display(contacts)
 
         if is_last:
             print("\nI've displayed all contacts from the Address Book.")
@@ -226,7 +226,7 @@ def search_tag(object):
     tag_sear = object.check_if_tag_exists(tag)
     if tag_sear:
         print("\nI've found this tag.")
-        inter.display_contacts(inter.ViewNotes(), tag_sear)
+        inter.ViewNotes().display(tag_sear)
     else:
         print(f"There is no tag {tag.value}.")
 
@@ -240,8 +240,7 @@ def contact_birthday(object):
     contact = object.check_if_contact_exists(name)
     if contact:
         result = object.birthday(contact)
-        inter.display_contacts(
-            inter.ViewContactBirthday(), result)
+        inter.ViewContactBirthday().display(result)
     else:
         print(f"Contact with name '{name}' not found.")
 
@@ -266,10 +265,10 @@ def upcoming_birthdays(object):
         )
     if any(today):
         print("\nSomeone has birthday today, so wish 'HAPPY BIRTHDAY' today to: ")
-        inter.display_contacts(inter.ViewTodayBirthday(), today)
+        inter.ViewTodayBirthday().display(today)
     if any(upcoming):
         print("\nSend birthday wishes to your contact on the upcoming days:")
-        inter.display_contacts(inter.ViewUpcomingBirthdays(), upcoming)
+        inter.ViewUpcomingBirthdays().display(upcoming)
 
 ############################################ EDIT ##########################
 
@@ -280,7 +279,7 @@ def edit_func(object):
     contact = object.check_if_contact_exists(name)
     if contact:
         print("\nI've found in the Address Book the contact you want to edit:")
-        inter.display_contacts(inter.ViewContact(), contact)
+        inter.ViewContact().display(contact)
         choice = input(
             "\nPlease confirm if this is the contact you want to edit? (Y/N): ")
 
@@ -321,7 +320,7 @@ def delete_func(object):
     contact = object.check_if_contact_exists(name)
     if len(contact) > 0:
         print("\nI've found in the Address Book this contact.")
-        inter.display_contacts(inter.ViewContact(), contact)
+        inter.ViewContact().display(contact)
         info_delete = input(
             "\nWhat would you like to delete?\n Contact, Name, Phone, Email, Birthday, Address, Tag, or Notes: ")
         if info_delete.lower().strip() == "contact":

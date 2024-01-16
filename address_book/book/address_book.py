@@ -1,11 +1,10 @@
-from collections import UserDict
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 import pickle
 from abc import abstractmethod, ABC
 from pathlib import Path
-from data import TestData
-from record import Notes, Record, Name, Phone, Email, Birthday, Address, Tag
+from .data import TestData
+from .record import Record, Tag
 
 
 class AbstractAddressBook(ABC):

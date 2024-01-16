@@ -1,6 +1,4 @@
 from abc import abstractmethod, ABC
-from record import Notes, Record, Name, Phone, Email, Birthday, Address, Tag
-from dataclasses import dataclass
 from datetime import datetime
 
 

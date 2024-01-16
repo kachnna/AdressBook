@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from record import Record, Name, Phone, Email, Birthday, Address, Tag, Notes
+from .record import Record, Name, Phone, Email, Birthday, Address, Tag, Notes
 
 
 class TestData:
