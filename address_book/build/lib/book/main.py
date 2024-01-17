@@ -102,11 +102,11 @@ def func_hello(object):
 
 
 @input_error
-def add_func(obj):
+def add_func(object):
     to_add = True
     print("\nPlease complete the information below. Name is mandatory, but the rest you can skip by clicking Enter.")
     name = Name(input("\nEnter name*: "))
-    contact = obj.check_if_contact_exists(name)
+    contact = object.check_if_contact_exists(name)
 
     if len(contact) > 0:
         print("\nI've found in the Address Book the contact(s) with the same name:")
@@ -146,11 +146,11 @@ def add_func(obj):
     tag = Tag(input("Enter new tag: "))
     notes = Notes(input("Enter new notes: "))
 
-    if obj.check_entered_values(name, phone, email, birthday, address, tag, notes):
+    if object.check_entered_values(name, phone, email, birthday, address, tag, notes):
         if to_add:
-            new_contact = obj.add(name, phone, email,
-                                  birthday, address, tag, notes)
-            obj.save_to_file()
+            new_contact = object.add(name, phone, email,
+                                     birthday, address, tag, notes)
+            object.save_to_file()
             inter.ViewContact().display(new_contact)
             print("Contact added successfully.")
         raise ValueError(

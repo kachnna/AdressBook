@@ -43,7 +43,7 @@ class ViewContacts(AbstractView):
             print(pattern.format("Id", "Name", "Phone",
                   "Email", "Birthday", "Address"))
             print(separator)
-            for id, obj in sorted(data.items(), key=lambda x: str(x[1].name) if isinstance(x[1].name, str) else str(x[1].name.value)):
+            for id, obj in sorted(data.items(), key=lambda x: int(x[0])):
                 print(pattern.format(
                     id,
                     check_value(obj.name.value),

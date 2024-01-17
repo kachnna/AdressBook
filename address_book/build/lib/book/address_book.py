@@ -56,7 +56,7 @@ class AbstractAddressBook(ABC):
 
     @abstractmethod
     def birthday(self, contact_name):
-        # days till birthday
+        # days to birthday
         pass
 
     @abstractmethod
