@@ -1,0 +1,2 @@
+[console_scripts]
+alfred = book.main:main
