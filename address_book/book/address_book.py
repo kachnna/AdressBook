@@ -10,11 +10,6 @@ from .record import Record, Tag
 class AbstractAddressBook(ABC):
 
     @abstractmethod
-    def read_from_file(self):
-        # Read address book data from a file.
-        pass
-
-    @abstractmethod
     def save_to_file(self):
         # Save address book data to a file.
         pass
@@ -94,6 +89,7 @@ class AddressBook(AbstractAddressBook):
     def save_to_file(self):
         with open(self.filename, "wb") as file:
             pickle.dump(self.contacts, file)
+ # Read address book data from a file.
 
     def read_from_file(self):
         if self.path.is_file() == False:
