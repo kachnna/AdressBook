@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 import pickle
 from abc import abstractmethod, ABC
 from pathlib import Path
-from .data import TestData
-from .record import Record, Tag
+from data import TestData
+from record import Record, Tag
 
 
 class AbstractAddressBook(ABC):

@@ -1,6 +1,6 @@
-from book import inter
-from .address_book import AddressBook
-from .record import Notes, Name, Phone, Email, Birthday, Address, Tag
+import inter
+from address_book import AddressBook
+from record import Notes, Name, Phone, Email, Birthday, Address, Tag
 from thefuzz import fuzz
 
 
