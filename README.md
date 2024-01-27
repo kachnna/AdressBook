@@ -21,7 +21,7 @@
    ```
    pipenv shell
    ```
-5. **Run "Alfred":
+5. **Run "Alfred":**
    ```
    pipenv run python book/main.py
    ```
