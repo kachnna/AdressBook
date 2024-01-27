@@ -154,6 +154,14 @@ class AddressBook(AbstractAddressBook):
         return results
 
     @input_error
+    def check_latest_id(self):
+        list_of_id = []
+        for key_id in self.contacts.keys():
+            list_of_id.append(key_id)
+        max_ID = max(list_of_id)
+        return max_ID
+
+    @input_error
     def check_if_tag_exists(self, tag):
         if Tag is None:
             pass
@@ -254,8 +262,8 @@ class AddressBook(AbstractAddressBook):
     @input_error
     def add(self, name, phone, email, birthday, address, tag, notes):
         id = int(self.check_latest_id() + 1)
-        new_contact = Record(name.value, phone.value, email.value,
-                             birthday.value, address.value, tag.value, notes.value)
+        new_contact = Record(name, phone, email,
+                             birthday, address, tag, notes)
         self.contacts[id] = new_contact
         return dict(filter(lambda item: item[0] == id, self.contacts.items()))
 

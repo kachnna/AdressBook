@@ -105,6 +105,7 @@ class ViewContact(AbstractView):
                 print(pattern_tag_notes.format(
                     "Notes", check_value(obj.notes.value)))
                 print(separator)
+                print("\n")
         else:
             raise ContactNotFound
 
@@ -137,6 +138,7 @@ class ViewUpcomingBirthdays(AbstractView):
                 data.items(), key=lambda x: month_sort_key(x[0])
             ):
                 for user_info in users:
+                    user_info = [check_value(info) for info in user_info]
                     print("{:^30}|{:^30}|{:^30}|{:^30}".format(day, *user_info))
                     print("-" * 120)
 

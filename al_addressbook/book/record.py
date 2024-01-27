@@ -38,6 +38,8 @@ class Phone(Field):
             self._value = new_value
 
     def validate_phone(self, value):
+        if value is None:
+            return True
         if len(value) == 0:
             return True
         if value is not None:
@@ -63,10 +65,12 @@ class Email(Field):
             self._value = new_value
 
     def validate_email(self, value):
+        if value is None:
+            return True
         if len(value) == 0:
             return True
         if value is not None:
-            email_regex = r"[a-z0-9]+@[a-z]+\.[a-z]{2,3}"
+            email_regex = r"[A-z0-9]+@[a-z]+\.[a-z]{2,3}"
             return bool(re.match(email_regex, value))
         return False
 
@@ -88,6 +92,8 @@ class Birthday(Field):
 
     def validate_birthday(self, value):
         date_format = "%Y-%m-%d"
+        if value is None:
+            return True
         if len(value) == 0:
             return True
         try:

@@ -105,13 +105,19 @@ def func_hello(object):
 def add_func(object):
     to_add = True
     print("\nPlease complete the information below. Name is mandatory, but the rest you can skip by clicking Enter.")
-    name = Name(input("\nEnter name*: "))
-    contact = object.check_if_contact_exists(name)
+    enter_name = input("\nEnter name*: ")
+
+    if enter_name == "":
+        print("You did not put any name. Please try again.")
+        return
+
+    contact = object.check_if_contact_exists(enter_name)
 
     if len(contact) > 0:
         print("\nI've found in the Address Book the contact(s) with the same name:")
         inter.ViewContact().display(contact)
         choice = input("\nWould you like to update the contact? (Y/N): ")
+
         if choice.lower() in ["y", "yes", "true"]:
             to_add = False
             while True:
@@ -123,7 +129,7 @@ def add_func(object):
                         f"Input new {att} of the contact (press Enter to keep current): ").strip()
 
                     if new_value:
-                        object.edit(contact, att, new_value)
+                        getattr(object, f'edit_{att}')(new_value)
                     else:
                         print(f"Keeping current {att}.")
 
@@ -138,23 +144,28 @@ def add_func(object):
                     continue
         else:
             print("Contact not confirmed for editing.")
+            return
 
-    phone = Phone(input("Enter new phone: "))
-    email = Email(input("Enter new email: "))
-    birthday = Birthday(input("Enter new birthday: "))
-    address = Address(input("Enter new address: "))
-    tag = Tag(input("Enter new tag: "))
-    notes = Notes(input("Enter new notes: "))
+    new_phone = Phone(input("Enter new phone: "))
+    new_email = Email(input("Enter new email: "))
+    new_birthday = Birthday(input("Enter new birthday: "))
+    new_address = Address(input("Enter new address: "))
+    new_tag = Tag(input("Enter new tag: "))
+    new_notes = Notes(input("Enter new notes: "))
+    name = Name(enter_name)
 
-    if object.check_entered_values(name, phone, email, birthday, address, tag, notes):
+    if object.check_entered_values(name, new_phone, new_email, new_birthday, new_address, new_tag, new_notes):
         if to_add:
-            new_contact = object.add(name, phone, email,
-                                     birthday, address, tag, notes)
+            object.add(name, new_phone, new_email, new_birthday,
+                       new_address, new_tag, new_notes)
             object.save_to_file()
+            new_contact = object.check_if_contact_exists(enter_name)
             inter.ViewContact().display(new_contact)
             print("Contact added successfully.")
+            return
         raise ValueError(
             "You did not enter any data to change the contact information. Please try again.")
+
 
 #########################################   SHOW   ##########################
 

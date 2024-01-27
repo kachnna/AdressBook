@@ -1,22 +1,15 @@
 FROM python:3.11-alpine
 
-# Ustaw zmienną środowiskową APP_HOME
 ENV APP_HOME /app
 
-# Ustaw katalog roboczy na /my_contacts_addressbook
-WORKDIR /my_contacts_addressbook
+RUN pip install pipenv
 
-EXPOSE 5000
+WORKDIR /app
 
-# Skopiuj pliki Pipfile oraz Pipfile.lock do obecnego katalogu
-COPY Pipfile Pipfile.lock ./
+COPY Pipfile Pipfile.lock /app/
 
-# Zainstaluj pipenv i pakiety z Pipfile
-RUN python -m pip install --upgrade pip
-RUN pip install pipenv && pipenv install --dev --system --deploy
+RUN pipenv install --deploy --system
 
-# Skopiuj całą zawartość do katalogu roboczego w kontenerze
-COPY . .
+COPY . /app/
 
-# Uruchom główny plik aplikacji
 CMD ["python", "book/main.py"]
