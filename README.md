@@ -1,4 +1,4 @@
-## Setup "Alfred" - INSTRUCTION
+## Setup INSTRUCTION "Alfred" 
 
 ## 1) Setup by pipenv
 
